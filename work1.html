@@ -75,6 +75,12 @@
       color: #dc3545 !important;
       font-weight: bold;
     }
+    .card.correct {
+      border: 3px solid #198754;
+    }
+    .card.incorrect {
+      border: 3px solid #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -127,7 +133,7 @@
         $.each(data, function (index, quiz) {
           let no = index + 1;
           quizListHtml += `
-            <div class="card mb-3">
+            <div class="card mb-3" id="question${no}">
               <div class="card-body">
                 <h5 class="card-title">Question ${no}</h5>
                 <p class="card-text">${quiz.title}</p>`;
@@ -176,18 +182,18 @@
 
           if (parseInt(selectedAnswer) === correctAnswer) {
             score++;
-            $(`input[name='q${no}'][value='${correctAnswer}']`)
-              .parent()
-              .addClass("text-success");
+            $(`#question${no}`).addClass("correct");
           } else {
-            $(`input[name='q${no}'][value='${correctAnswer}']`)
+            $(`#question${no}`).addClass("incorrect");
+          }
+
+          $(`input[name='q${no}'][value='${correctAnswer}']`)
+            .parent()
+            .addClass("text-success");
+          if (selectedAnswer && parseInt(selectedAnswer) !== correctAnswer) {
+            $(`input[name='q${no}'][value='${selectedAnswer}']`)
               .parent()
-              .addClass("text-success");
-            if (selectedAnswer) {
-              $(`input[name='q${no}'][value='${selectedAnswer}']`)
-                .parent()
-                .addClass("text-danger");
-            }
+              .addClass("text-danger");
           }
         });
 
