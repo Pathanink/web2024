@@ -60,6 +60,15 @@
     footer a:hover {
       text-decoration: underline;
     }
+    .fixed-progress {
+      position: sticky;
+      top: 0;
+      z-index: 1050;
+      background-color: #ffffff;
+      padding: 10px 15px;
+      border-bottom: 2px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
     .progress {
       height: 20px;
       border-radius: 10px;
@@ -90,6 +99,12 @@
   <p>Test your understanding of the Present Simple Tense!</p>
 </div>
 
+<div class="fixed-progress">
+  <div class="progress">
+    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+  </div>
+</div>
+
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-lg-8 col-md-10 col-sm-12 quiz-container">
@@ -101,9 +116,6 @@
         <div id="quizListBox" class="mt-4"></div>
         <button class="btn btn-primary mt-4" id="btnCheckAnswer" disabled>Check Answers</button>
         <div id="resultBox" class="mt-4"></div>
-        <div class="progress mt-3">
-          <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
-        </div>
       </div>
     </div>
   </div>
