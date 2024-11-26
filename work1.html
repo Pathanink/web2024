@@ -130,10 +130,12 @@
     let totalQuestions = 0;
 
     $("#quizBox").hide();
-
+    $("#progressBar").hide();
+    
     $("#btnStart").click(function () {
       $("#startBox").hide();
       $("#quizBox").show();
+      $("#progressBar").show();
       loadQuiz();
     });
 
