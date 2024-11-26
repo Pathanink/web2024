@@ -67,6 +67,14 @@
     .progress-bar {
       background-color: #28a745;
     }
+    .text-success {
+      color: #198754 !important;
+      font-weight: bold;
+    }
+    .text-danger {
+      color: #dc3545 !important;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -100,30 +108,30 @@
 </footer>
 
 <script>
-  $(function() {
+  $(function () {
     let totalQuestions = 0;
 
     $("#quizBox").hide();
 
-    $("#btnStart").click(function() {
+    $("#btnStart").click(function () {
       $("#startBox").hide();
       $("#quizBox").show();
       loadQuiz();
     });
 
     function loadQuiz() {
-      $.getJSON("quiz.json", function(data) {
+      $.getJSON("quiz.json", function (data) {
         totalQuestions = data.length;
         let quizListHtml = "";
 
-        $.each(data, function(index, quiz) {
+        $.each(data, function (index, quiz) {
           let no = index + 1;
           quizListHtml += `
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Question ${no}</h5>
                 <p class="card-text">${quiz.title}</p>`;
-          $.each(quiz.options, function(optionIndex, option) {
+          $.each(quiz.options, function (optionIndex, option) {
             quizListHtml += `
               <div class="form-check">
                 <input class="form-check-input quiz-option" type="radio" name="q${no}" value="${optionIndex + 1}">
@@ -135,7 +143,7 @@
 
         $("#quizListBox").html(quizListHtml);
 
-        $(".quiz-option").change(function() {
+        $(".quiz-option").change(function () {
           checkAllAnswered();
         });
       });
@@ -157,19 +165,35 @@
       }
     }
 
-    $("#btnCheckAnswer").click(function() {
-      $.getJSON("quiz.json", function(data) {
+    $("#btnCheckAnswer").click(function () {
+      $.getJSON("quiz.json", function (data) {
         let score = 0;
 
-        $.each(data, function(index, quiz) {
+        $.each(data, function (index, quiz) {
           let no = index + 1;
           let selectedAnswer = $(`input[name='q${no}']:checked`).val();
-          if (parseInt(selectedAnswer) === quiz.answer) {
+          let correctAnswer = quiz.answer;
+
+          if (parseInt(selectedAnswer) === correctAnswer) {
             score++;
+            $(`input[name='q${no}'][value='${correctAnswer}']`)
+              .parent()
+              .addClass("text-success");
+          } else {
+            $(`input[name='q${no}'][value='${correctAnswer}']`)
+              .parent()
+              .addClass("text-success");
+            if (selectedAnswer) {
+              $(`input[name='q${no}'][value='${selectedAnswer}']`)
+                .parent()
+                .addClass("text-danger");
+            }
           }
         });
 
-        $("#resultBox").html(`<div class="result-box">Your Score: ${score}/${totalQuestions}</div>`);
+        $("#resultBox").html(
+          `<div class="result-box">Your Score: ${score}/${totalQuestions}</div>`
+        );
       });
     });
   });
