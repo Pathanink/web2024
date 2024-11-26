@@ -99,7 +99,7 @@
   <p>Test your understanding of the Present Simple Tense!</p>
 </div>
 
-<div class="fixed-progress">
+<div class="fixed-progress" id="fixedProgress">
   <div class="progress">
     <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
   </div>
@@ -130,12 +130,12 @@
     let totalQuestions = 0;
 
     $("#quizBox").hide();
-    $("#progressBar").hide();
+    $("#fixedProgress").hide();
     
     $("#btnStart").click(function () {
       $("#startBox").hide();
       $("#quizBox").show();
-      $("#progressBar").show();
+      $("#fixedProgress").show();
       loadQuiz();
     });
 
