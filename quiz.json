@@ -1,6 +1,6 @@
 [
     {
-        "title": "What is the correct form of the verb in: She ______ every morning?",
+        "title": "She ______ every morning?",
         "options": [
             "walks",
             "walk",
@@ -100,7 +100,7 @@
         "answer": 2
     },
     {
-        "title": "Choose the correct sentence: She ______ piano every day.",
+        "title": "She ______ piano every day.",
         "options": [
             "practice",
             "practices",
@@ -130,7 +130,7 @@
         "answer": 1
     },
     {
-        "title": "Which is correct: They ______ football every evening.",
+        "title": "They ______ football every evening.",
         "options": [
             "plays",
             "play",
