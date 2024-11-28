@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Science Quiz</title>
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.3.4/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/vue@3.3.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.4/dist/vuetify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.5s;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+    .question-card {
+      transition: transform 0.3s;
+    }
+    .question-card:hover {
+      transform: translateY(-2px);
+    }
+    .option-hover:hover {
+      background-color: #f5f5f5 !important;
+    }
+    .v-radio.correct {
+      background-color: #4caf50 !important;
+      color: white !important;
+    }
+    .v-radio.incorrect {
+      background-color: #f44336 !important;
+      color: white !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-theme-provider theme="light">
+        <v-main>
+          <v-container class="py-8">
+            <v-sheet 
+              class="text-center py-8 rounded-lg mb-6" 
+              color="primary" 
+              elevation="3"
+            >
+              <h1 class="text-h3 font-weight-bold text-white mb-2">General Science Quiz</h1>
+              <p class="text-h6 text-white">General scientific knowledge you should know</p>
+            </v-sheet>
+
+            <transition-group name="fade" mode="out-in">
+              <v-card 
+                v-if="showQuiz" 
+                :key="'quiz'"
+                class="question-card mb-6" 
+                elevation="2"
+                rounded="lg"
+              >
+                <v-card-text class="pa-6">
+                  <div class="question-container">
+                    <h2 class="text-h5 mb-4">
+                      {{ currentQuestionIndex + 1 }}. {{ quizzes[currentQuestionIndex].title }}
+                    </h2>
+                    <v-radio-group
+                      v-model="answers[currentQuestionIndex]"
+                      @change="updateProgress"
+                      class="mt-4"
+                    >
+                      <v-radio
+                        v-for="(option, optionIndex) in quizzes[currentQuestionIndex].options"
+                        :key="optionIndex"
+                        :value="optionIndex + 1"
+                        :label="option"
+                        :class="[ 
+                          'mb-4 pa-4 rounded-lg option-hover',
+                          {'correct': showResult && quizzes[currentQuestionIndex].answer === optionIndex + 1},
+                          {'incorrect': showResult && answers[currentQuestionIndex] === optionIndex + 1 && answers[currentQuestionIndex] !== quizzes[currentQuestionIndex].answer}
+                        ]"
+                      ></v-radio>
+                    </v-radio-group>
+                  </div>
+                </v-card-text>
+                <v-divider></v-divider>
+                <v-card-actions class="pa-4">
+                  <v-btn
+                    v-if="currentQuestionIndex > 0"
+                    color="grey-darken-1"
+                    variant="outlined"
+                    @click="previousQuestion"
+                    prepend-icon="mdi-arrow-left"
+                  >
+                    Previous
+                  </v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    v-if="currentQuestionIndex < quizzes.length - 1"
+                    color="primary"
+                    @click="nextQuestion"
+                    append-icon="mdi-arrow-right"
+                  >
+                    Next
+                  </v-btn>
+                  <v-btn
+                    v-else
+                    color="success"
+                    :disabled="!allAnswered"
+                    @click="checkAnswers"
+                    append-icon="mdi-check"
+                  >
+                    Submit Quiz
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+
+              <v-card 
+                v-if="showResult" 
+                :key="'result'"
+                class="text-center" 
+                elevation="2"
+                rounded="lg"
+              >
+                <v-card-text class="pa-6">
+                  <v-icon 
+                    :color="score === quizzes.length ? 'success' : 'warning'" 
+                    size="64" 
+                    class="mb-4"
+                  >
+                    {{ score === quizzes.length ? 'mdi-trophy' : 'mdi-alert-circle' }}
+                  </v-icon>
+                  <h2 class="text-h4 mb-4">
+                    Your Score: {{ score }}/{{ quizzes.length }}
+                    ({{ Math.round((score/quizzes.length) * 100) }}%)
+                  </h2>
+                  <v-divider class="my-4"></v-divider>
+                  <div class="text-left">
+                    <h3 class="text-h5 mb-4">Review Your Answers:</h3>
+                    <v-timeline density="compact" align="start">
+                      <v-timeline-item
+                        v-for="(quiz, index) in quizzes"
+                        :key="index"
+                        :dot-color="answers[index] === quiz.answer ? 'success' : 'error'"
+                        :icon="answers[index] === quiz.answer ? 'mdi-check' : 'mdi-close'"
+                      >
+                        <template v-slot:opposite>
+                          <div class="text-caption">Question {{ index + 1 }}</div>
+                        </template>
+                        <v-card class="elevation-1">
+                          <v-card-text>
+                            <p class="text-subtitle-1">{{ quiz.title }}</p>
+                            <p class="text-success font-weight-bold">
+                              Correct Answer: {{ quiz.options[quiz.answer - 1] }}
+                            </p>
+                            <p v-if="answers[index] !== quiz.answer" class="text-error">
+                              Your Answer: {{ quiz.options[answers[index] - 1] }}
+                            </p>
+                          </v-card-text>
+                        </v-card>
+                      </v-timeline-item>
+                    </v-timeline>
+                  </div>
+                </v-card-text>
+                <v-card-actions class="pa-4 justify-center">
+                  <v-btn
+                    color="primary"
+                    @click="resetQuiz"
+                    prepend-icon="mdi-refresh"
+                    size="large"
+                  >
+                    Try Again
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+
+              <v-card 
+                v-if="!showQuiz && !showResult && !loading" 
+                :key="'start'"
+                class="text-center" 
+                elevation="2"
+                rounded="lg"
+              >
+                <v-card-text class="pa-8">
+                  <v-icon color="primary" size="64" class="mb-4">mdi-book-open-page-variant</v-icon>
+                  <h2 class="text-h4 mb-4">Welcome to General Science Quiz!</h2>
+                  <p class="text-body-1 mb-6">Test your understanding of General Science.</p>
+                  <v-btn
+                    color="primary"
+                    size="x-large"
+                    @click="startQuiz"
+                    prepend-icon="mdi-play"
+                  >
+                    Start Quiz
+                  </v-btn>
+                </v-card-text>
+              </v-card>
+            </transition-group>
+
+            <div v-if="loading" class="text-center py-12">
+              <v-progress-circular
+                indeterminate
+                color="primary"
+                size="64"
+              ></v-progress-circular>
+              <p class="text-h6 mt-4">Loading Quiz...</p>
+            </div>
+          </v-container>
+        </v-main>
+      </v-theme-provider>
+    </v-app>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          showQuiz: false,
+          showResult: false,
+          loading: false,
+          quizzes: [],
+          answers: [],
+          progress: 0,
+          score: 0,
+          currentQuestionIndex: 0,
+        };
+      },
+      computed: {
+        allAnswered() {
+          return this.answers.filter(answer => answer !== null).length === this.quizzes.length;
+        },
+      },
+      methods: {
+        startQuiz() {
+          this.showQuiz = false;
+          this.showResult = false;
+          this.loading = true;
+          this.currentQuestionIndex = 0;
+          this.loadQuiz();
+        },
+        async loadQuiz() {
+          try {
+            const response = await axios.get('quiz2.json');
+            this.quizzes = response.data;
+            this.answers = new Array(this.quizzes.length).fill(null);
+            setTimeout(() => {
+              this.loading = false;
+              this.showQuiz = true;
+            }, 1000);
+          } catch (error) {
+            console.error("Failed to load quiz data:", error);
+            alert("Unable to load quiz data. Please check the file or server.");
+            this.loading = false;
+          }
+        },
+        updateProgress() {
+          const answeredCount = this.answers.filter(answer => answer !== null).length;
+          this.progress = Math.round((answeredCount / this.quizzes.length) * 100);
+        },
+        nextQuestion() {
+          if (this.currentQuestionIndex < this.quizzes.length - 1) {
+            this.currentQuestionIndex++;
+          }
+        },
+        previousQuestion() {
+          if (this.currentQuestionIndex > 0) {
+            this.currentQuestionIndex--;
+          }
+        },
+        checkAnswers() {
+          this.score = 0;
+          this.quizzes.forEach((quiz, index) => {
+            if (this.answers[index] === quiz.answer) {
+              this.score++;
+            }
+          });
+          this.showQuiz = false;
+          this.showResult = true;
+        },
+        resetQuiz() {
+          this.progress = 0;
+          this.score = 0;
+          this.currentQuestionIndex = 0;
+          this.answers = new Array(this.quizzes.length).fill(null);
+          this.startQuiz();
+        },
+      },
+    });
+    
+    app.use(Vuetify.createVuetify({
+      theme: {
+        defaultTheme: 'light',
+        themes: {
+          light: {
+            colors: {
+              primary: '#1976D2',
+              secondary: '#424242',
+              success: '#4CAF50',
+              error: '#FF5252',
+              warning: '#FFC107',
+            },
+          },
+        },
+      },
+    }));
+    app.mount("#app");
+  </script>
+</body>
+</html>
