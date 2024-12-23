@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-bootstrap@next/dist/react-bootstrap.min.js" crossorigin></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f0f2f5;
+        }
+        .quiz-card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 15px;
+        }
+        .quiz-header {
+            background: #0d6efd;
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1rem;
+        }
+        .quiz-footer {
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+            padding: 1rem;
+        }
+        .question-card {
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+        .progress {
+            height: 1.5rem;
+            border-radius: 1rem;
+        }
+        .btn-quiz {
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-quiz:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+        }
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .score-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div id="myapp" class="container p-4"></div>
+    <script type="text/babel">
+    const {Button, Alert, Card, ProgressBar} = ReactBootstrap;
+
+    function Menu({app}) {
+        return (
+            <Card className="quiz-card text-center">
+                <Card.Header as="h5" className="quiz-header">แบบทดสอบออนไลน์</Card.Header>
+                <Card.Body className="p-5">
+                    <Card.Title className="display-6 mb-4">ยินดีต้อนรับสู่แบบทดสอบ</Card.Title>
+                    <Card.Text className="lead mb-4">
+                        แบบทดสอบนี้ประกอบด้วยคำถามปรนัย 
+                        กรุณาเลือกคำตอบที่ถูกต้องที่สุดเพียงข้อเดียว
+                    </Card.Text>
+                    <Button className="btn-quiz" variant="primary" size="lg" onClick={() => app.setState({status: 1})}>
+                        เริ่มทำแบบทดสอบ
+                    </Button>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    function QBlock({i, q, app}) {
+        const handleChange = (event) => {
+            const name = event.target.name;
+            const value = event.target.value;
+            const answers = {...app.state.answers, [name]: value};
+            app.setState({answers});
+        };
+
+        return (
+            <Card className="question-card">
+                <Card.Body className="p-4">
+                    <Card.Title className="h5 mb-4">
+                        <span className="badge bg-primary me-2">ข้อที่ {i + 1}</span>
+                    </Card.Title>
+                    <div className="mb-4 lead" dangerouslySetInnerHTML={{__html: q.title}}></div>
+                    <div className="ps-4">
+                        {q.options.map((option, pi) => (
+                            <div key={pi} className="form-check mb-3">
+                                <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name={`q${i}`}
+                                    value={pi + 1}
+                                    onChange={handleChange}
+                                    checked={app.state.answers[`q${i}`] === String(pi + 1)}
+                                />
+                                <label className="form-check-label">
+                                    {option}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    function QList({list, app}) {
+        const answeredCount = Object.keys(app.state.answers).length;
+        const progress = (answeredCount / list.length) * 100;
+
+        return (
+            <div>
+                <Card className="mb-4 quiz-card">
+                    <Card.Body className="p-4">
+                        <h5 className="mb-3">ความคืบหน้า</h5>
+                        <ProgressBar 
+                            now={progress} 
+                            label={`${progress.toFixed(0)}%`}
+                            variant="primary"
+                            className="mb-2"
+                        />
+                        <small className="text-muted">
+                            ตอบแล้ว {answeredCount} จาก {list.length} ข้อ
+                        </small>
+                    </Card.Body>
+                </Card>
+                {list.map((q, i) => (
+                    <QBlock key={i} q={q} i={i} app={app} />
+                ))}
+                {answeredCount === list.length && (
+                    <Button 
+                        variant="success" 
+                        className="btn-quiz w-100"
+                        size="lg"
+                        onClick={() => app.checkAnswer()}
+                    >
+                        ตรวจคำตอบ
+                    </Button>
+                )}
+            </div>
+        );
+    }
+
+    function ShowScore({app}) {
+        const scorePercentage = (app.state.score / app.state.qlist.length) * 100;
+        const scoreVariant = scorePercentage >= 80 ? "success" : 
+                           scorePercentage >= 60 ? "warning" : "danger";
+                           
+        return (
+            <Card className="quiz-card text-center">
+                <Card.Body className="p-5">
+                    <Card.Title className="display-6 mb-4">ผลการทดสอบของคุณ</Card.Title>
+                    <div className="score-display mb-4">{app.state.score}</div>
+                    <h5 className="mb-4">คะแนนที่ได้ {app.state.score} จาก {app.state.qlist.length} คะแนน</h5>
+                    <ProgressBar className="mb-4">
+                        <ProgressBar 
+                            variant={scoreVariant}
+                            now={scorePercentage} 
+                            label={`${scorePercentage}%`}
+                        />
+                    </ProgressBar>
+                    <Button 
+                        variant="primary" 
+                        className="btn-quiz"
+                        size="lg"
+                        onClick={() => app.setState({status: 0, answers: {}, score: 0})}
+                    >
+                        ทำแบบทดสอบอีกครั้ง
+                    </Button>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    class App extends React.Component {
+        state = {
+            qlist: [],
+            status: 0,
+            answers: {},
+            score: 0
+        }
+
+        title = "แบบทดสอบออนไลน์";
+        footer = <>
+            By นายปธานิน คูหาทอง 653380205-4
+            <br/>
+            College of Computing, Khon Kaen University
+        </>;
+
+        constructor() {
+            super();
+            this.load_data();
+        }
+
+        async load_data() {
+            try {
+                const res = await fetch("quiz3.json");
+                const data = await res.json();
+                this.setState({qlist: data});
+            } catch (error) {
+                console.error("Error loading quiz data:", error);
+            }
+        }
+
+        checkAnswer = () => {
+            const score = this.state.qlist.reduce((total, q, i) => {
+                return total + (q.answer == this.state.answers[`q${i}`] ? 1 : 0);
+            }, 0);
+            this.setState({status: 2, score});
+        }
+
+        render() {
+            let content;
+            switch(this.state.status) {
+                case 1:
+                    content = <QList list={this.state.qlist} app={this} />;
+                    break;
+                case 2:
+                    content = <ShowScore app={this} />;
+                    break;
+                default:
+                    content = <Menu app={this} />;
+            }
+
+            return (
+                <div className="container">
+                    <Card className="quiz-card">
+                        {this.state.status !== 0 && 
+                            <Card.Header className="quiz-header text-center">{this.title}</Card.Header>
+                        }
+                        <Card.Body className="p-4">{content}</Card.Body>
+                        <Card.Footer className="quiz-footer text-center">{this.footer}</Card.Footer>
+                    </Card>
+                </div>
+            );
+        }
+    }
+
+    const container = document.getElementById('myapp');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+    </script>
+</body>
+</html>
