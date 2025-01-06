@@ -12,6 +12,19 @@
 <body>
     <a-scene>
         <a-sky src="view.jpg" color="#ECECEC"></a-sky>
+        <a-entity light="type: point; color: #ff0000; intensity: 2; distance: 10;" 
+          position="0 5 0"
+          animation="property: position; to: 5 5 0; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
+        </a-entity>
+
+        <a-entity light="type: point; color: #00ff00; intensity: 2; distance: 10;" 
+          position="0 5 0"
+          animation="property: position; to: -5 5 0; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
+        </a-entity>
+        <a-entity light="type: point; color: #0000ff; intensity: 2; distance: 10;" 
+          position="0 5 0"
+          animation="property: position; to: 0 5 5; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine">
+        </a-entity>
         
         <a-text value="Hello, I am\nPathanin Kuhathong"
                 position="-2 1.85 -4"
